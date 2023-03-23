@@ -1,5 +1,5 @@
-# Name:  
-# UID:  
+# Name:  Wong Sze Lung
+# UID:  3035762190
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -37,7 +37,14 @@ def part1_show_T_pose(viewer, joint_names, joint_parents, joint_offsets):
                    else, the current joint global position = the sum of all parent joint offsets
         '''
         ########## Code Start ############
-
+        
+        if parent_idx == -1:
+            # when no parent joint for current joint
+            # global position = local position
+            global_joint_position[joint_idx] = joint_offsets[joint_idx][0]
+        else:
+            # global position = parent global position + local position
+            global_joint_position[joint_idx] = global_joint_position[parent_idx] + joint_offsets[joint_idx][0]
 
         ########## Code End ############
         viewer.set_joint_position_by_name(joint_names[joint_idx], global_joint_position[joint_idx])
@@ -89,7 +96,20 @@ def part2_forward_kinametic(viewer, joint_names, joint_parents, joint_offsets, j
                
     '''
     ########## Code Start ############
-    
+    for joint_idx, parent_idx in enumerate(joint_parents):
+        if parent_idx == -1:
+            global_joint_orientations[:,joint_idx,:] = joint_rotations[:,joint_idx,:]
+            global_joint_positions[:,joint_idx,:] = joint_positions[:,joint_idx,:]
+        else:
+            # Q_i = Q_i-1 * R_i
+            R_i = R.from_quat(joint_rotations[:,joint_idx,:])
+            Q_p = R.from_quat(global_joint_orientations[:,parent_idx,:])
+            Q_i = Q_p * R_i
+            
+            # P_i = P_i-1 + Q_p * L_i
+            global_joint_orientations[:,joint_idx,:] = R.as_quat(Q_i)
+            rotated_offset = Q_p.apply(joint_positions[:,joint_idx,:])
+            global_joint_positions[:,joint_idx,:] = global_joint_positions[:,parent_idx,:] + rotated_offset
 
     ########## Code End ############
     if not show_animation:
@@ -131,10 +151,10 @@ def main():
     _, local_joint_positions, local_joint_rotations = bvh_reader.load_motion_data(bvh_file_path)
 
     # part 1
-    part1_show_T_pose(viewer, joint_names, joint_parents, joint_offsets)
+    # part1_show_T_pose(viewer, joint_names, joint_parents, joint_offsets)
 
     # part 2
-    # part2_forward_kinametic(viewer, joint_names, joint_parents, joint_offsets, local_joint_positions, local_joint_rotations, show_animation=True)
+    part2_forward_kinametic(viewer, joint_names, joint_parents, joint_offsets, local_joint_positions, local_joint_rotations, show_animation=True)
 
 
 if __name__ == "__main__":

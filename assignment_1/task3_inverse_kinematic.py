@@ -1,5 +1,5 @@
-# Name:  
-# UID:  
+# Name:  Wong Sze Lung
+# UID:  3035762190
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -95,12 +95,16 @@ def inverse_kinematics(meta_data, global_joint_positions, global_joint_orientati
                 
                 ########## Code Start ############
                 
-
-
-
-
-
-
+                vec_cur2end = norm(chain_positions[end_idx] - chain_positions[current_idx])
+                vec_cur2tar = norm(target_pose - chain_positions[current_idx])
+                
+                rot = np.arccos(np.vdot(vec_cur2end, vec_cur2tar))
+                if np.isnan(rot):
+                    continue
+                axis = norm(np.cross(vec_cur2end, vec_cur2tar))
+                rot_vec = R.from_rotvec(rot * axis)
+                
+                chain_orientations[current_idx] = rot_vec * chain_orientations[current_idx]
                 
                 ########## Code End ############
 
@@ -189,11 +193,11 @@ def main():
     You should try different start and end joints and different target positions
     use WASD to move the control points in interactive mode (click the scene to activate the control points)
     '''
-    IK_example(viewer, np.array([0.5, 0.75, 0.5]), 'RootJoint', 'lWrist_end')
+    # IK_example(viewer, np.array([0.5, 0.75, 0.5]), 'RootJoint', 'lWrist_end')
     # IK_example(viewer, np.array([0.5, 0.75, 0.5]), 'lToeJoint_end', 'lWrist_end')
     # IK_interactive(viewer, np.array([0.5, 0.75, 0.5]), 'RootJoint', 'lWrist_end')
     # IK_interactive(viewer, np.array([0.5, 0.75, 0.5]), 'lToeJoint_end', 'lWrist_end')
-    # IK_interactive(viewer, np.array([0.5, 0.75, 0.5]), 'rToeJoint_end', 'lWrist_end')
+    IK_interactive(viewer, np.array([0.5, 0.75, 0.5]), 'rToeJoint_end', 'lWrist_end')
 
 
 if __name__ == "__main__":
