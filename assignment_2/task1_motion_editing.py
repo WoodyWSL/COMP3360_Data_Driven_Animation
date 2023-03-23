@@ -41,12 +41,32 @@ def interpolation(left_data, right_data, t, method='linear', return_first_key=Tr
     '''
     ########## Code Start ############
     if method == 'linear':
-        
-        
+        for i in range(1, t+1): # 1, 5
+            data_between = left_data + (right_data - left_data) * (i / t)
+            res.append(data_between)
+        # print(f"res[0][0]: {res[0][0]}")
+        # print(f"res[1][0]: {res[1][0]}")
         return res
     elif method == 'slerp':
+        interp_rots_joins_by_frame = [] # shape: (#joins, #frame)
+        for i in range(len(left_data)):
+            current_joint_left_quaternion = left_data[i]
+            current_joint_right_quaternion = right_data[i]
+            
+            key_rots = R.from_quat([current_joint_left_quaternion, 
+                                    current_joint_right_quaternion])
+            key_frames= [0, 1]
+            slerp = Slerp(key_frames, key_rots)
+            new_key_frames = np.linspace(0, 1, t+2)
+            interp_rots = slerp(new_key_frames)
+            # Discard the first and last frame of slerp, 
+            # Since the first frame already added into res[] if return_first_key == True
+            interp_rots = interp_rots[1:-1] 
+            interp_rots_joins_by_frame.append(interp_rots)
         
-        
+        for frame_idx in range(t):
+            current_frame_rotation = [R.as_quat(join[frame_idx]) for join in interp_rots_joins_by_frame]
+            res.append(np.array(current_frame_rotation))
         return res
     ########## Code End ############
 
@@ -184,8 +204,8 @@ def main():
     # part1_key_framing(viewer, 10, 10)
     # part1_key_framing(viewer, 10, 5)
     # part1_key_framing(viewer, 10, 20)
-    # part1_key_framing(viewer, 10, 30)
-    part2_concatenate(viewer, between_frames=8, example=True)
+    part1_key_framing(viewer, 10, 30)
+    # part2_concatenate(viewer, between_frames=8, example=True)
     # part2_concatenate(viewer, between_frames=8)  
     viewer.run()
 
