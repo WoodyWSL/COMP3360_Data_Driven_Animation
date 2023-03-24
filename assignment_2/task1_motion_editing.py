@@ -44,14 +44,12 @@ def interpolation(left_data, right_data, t, method='linear', return_first_key=Tr
         for i in range(1, t+1): # 1, 5
             data_between = left_data + (right_data - left_data) * (i / t)
             res.append(data_between)
-        # print(f"res[0][0]: {res[0][0]}")
-        # print(f"res[1][0]: {res[1][0]}")
         return res
     elif method == 'slerp':
-        interp_rots_joins_by_frame = [] # shape: (#joins, #frame)
-        for i in range(len(left_data)):
-            current_joint_left_quaternion = left_data[i]
-            current_joint_right_quaternion = right_data[i]
+        data_between = [[] for i in range(t)]
+        for joint_idx in range(len(left_data)):
+            current_joint_left_quaternion = left_data[joint_idx]
+            current_joint_right_quaternion = right_data[joint_idx]
             
             key_rots = R.from_quat([current_joint_left_quaternion, 
                                     current_joint_right_quaternion])
@@ -62,11 +60,10 @@ def interpolation(left_data, right_data, t, method='linear', return_first_key=Tr
             # Discard the first and last frame of slerp, 
             # Since the first frame already added into res[] if return_first_key == True
             interp_rots = interp_rots[1:-1] 
-            interp_rots_joins_by_frame.append(interp_rots)
-        
-        for frame_idx in range(t):
-            current_frame_rotation = [R.as_quat(join[frame_idx]) for join in interp_rots_joins_by_frame]
-            res.append(np.array(current_frame_rotation))
+            for frame, frame_interp_rots in enumerate(interp_rots):
+                data_between[frame].append(R.as_quat(frame_interp_rots))
+                
+        res = res + data_between
         return res
     ########## Code End ############
 
@@ -148,17 +145,31 @@ def concatenate_two_motions(motion1, motion2, last_frame_index, start_frame_indx
     '''
     
     ########## Code Start ############
-    # search_win1 = 
-    # search_win2 = 
+    search_win1 = motion1.local_joint_rotations[last_frame_index - searching_frames:last_frame_index + searching_frames]
+    search_win2 = motion2.local_joint_rotations[max(0, start_frame_indx - searching_frames):start_frame_indx + searching_frames]
     
-    # sim_matrix = 
-    # min_idx = 
-    # i, j = min_idx // sim_matrix.shape[1], min_idx % sim_matrix.shape[1]
-    # real_i, real_j = 
+    min_value = float('+inf')
+    i, j = None, None
+    sim_matrix = np.zeros((search_win1.shape[0], search_win2.shape[0]))
+        
+    for i_win1, search_source in enumerate(search_win1):
+        for j_win2, search_target in enumerate(search_win2):
+            sim_matrix[i_win1, j_win2] = np.linalg.norm(search_source - search_target)
+            if sim_matrix[i_win1, j_win2] < min_value:
+                min_value = sim_matrix[i_win1, j_win2]
+                i, j = i_win1, j_win2
     
-    # between_local_pos = 
-    # between_local_rot = 
+    real_i, real_j = last_frame_index - searching_frames + i, max(0, start_frame_indx - searching_frames) + j
     
+    shift = motion1.local_joint_positions[real_i, 0, :] - motion2.local_joint_positions[real_j, 0, :]
+    motion2.local_joint_positions[real_j:, 0, :] += shift
+    
+    between_local_pos = interpolation(motion1.local_joint_positions[real_i], 
+                                      motion2.local_joint_positions[real_j], 
+                                      between_frames - 1, 'linear')
+    between_local_rot = interpolation(motion1.local_joint_rotations[real_i], 
+                                      motion2.local_joint_rotations[real_j], 
+                                      between_frames - 1, 'slerp')    
     ########## Code End ############
     
     res = motion1.raw_copy()
@@ -204,9 +215,9 @@ def main():
     # part1_key_framing(viewer, 10, 10)
     # part1_key_framing(viewer, 10, 5)
     # part1_key_framing(viewer, 10, 20)
-    part1_key_framing(viewer, 10, 30)
+    # part1_key_framing(viewer, 10, 30)
     # part2_concatenate(viewer, between_frames=8, example=True)
-    # part2_concatenate(viewer, between_frames=8)  
+    part2_concatenate(viewer, between_frames=8)  
     viewer.run()
 
 
