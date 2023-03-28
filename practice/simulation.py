@@ -18,21 +18,63 @@ substeps = int(1 / 60 // dt)
 x = ti.Vector.field(3, dtype=float, shape=(n, n))
 v = ti.Vector.field(3, dtype=float, shape=(n, n))
 
+is_fixed = ti.field(dtype=bool, shape=(n, n))
 
 @ti.kernel
 def initialize_mass_points():
     for i, j in x:
         x[i, j] = [
-            i * quad_size - 0.5, j * quad_size - 0.5, 0
+            i * quad_size - 0.5, 0, j * quad_size - 0.5
         ]
         v[i, j] = [0, 0, 0]
+        # is_fixed[i, j] = (i == 0 and j == n - 1) or (i == n - 1 and j == n - 1)
+        is_fixed[i, j] = False
+        
+spring_offsets = []
+for i in range(-2, 3):
+    for j in range(-2, 3):
+        if (i, j) != (0, 0) and abs(i) + abs(j) <= 2:
+            spring_offsets.append(ti.Vector([i, j]))
 
+gravity = ti.Vector([0, -9.8, 0])
 
+spring_stiffness = 3e3
+damping_stiffness = 50
 @ti.kernel
 def substep():
-    # TODO
-    pass
-
+    # gravity
+    for i in ti.grouped(x):
+        v[i] += gravity * dt
+    
+    # internal springs
+    for i in ti.grouped(x):
+        force = ti.Vector([0.0, 0.0, 0.0])
+        for spring_offset in ti.static(spring_offsets):
+            j = i + spring_offset
+            if 0 <= j[0] < n and 0 <= j[1] < n:
+                x_ij = x[i] - x[j]
+                v_ij = v[i] - v[j]
+                d = x_ij.normalized()
+                current_dist = x_ij.norm()
+                original_dist = quad_size * float(i - j).norm()
+                # Spring force
+                force += -spring_stiffness * d * (current_dist / original_dist - 1)
+                
+                force += -(v_ij).dot(d) * d * damping_stiffness / current_dist
+                
+        v[i] += force * dt
+    for i in ti.grouped(x):
+        if is_fixed[i]:
+            v[i] = ti.Vector([0, 0, 0])
+    for i in ti.grouped(x):
+        offset_to_center = x[i] - ball_center[0]
+        if offset_to_center.norm() <= ball_radius:
+            # Velocity projection
+            normal = offset_to_center.normalized()
+            v[i] -= min(v[i].dot(normal), 0) * normal
+        # After working out the accumulative v[i],
+        # work out the positions of each mass point
+        x[i] += v[i] * dt
 
 num_triangles = (n - 1) * (n - 1) * 2
 indices = ti.field(int, shape=num_triangles * 3)
@@ -98,6 +140,6 @@ while window.running:
                show_wireframe=True)
 
     # Draw a smaller ball to avoid visual penetration
-    scene.particles(ball_center, radius=ball_radius * 1.6, color=(0.5, 0.42, 0.8))
+    scene.particles(ball_center, radius=ball_radius, color=(0.5, 0.42, 0.8))
     canvas.scene(scene)
     window.show()
