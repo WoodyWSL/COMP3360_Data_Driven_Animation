@@ -190,11 +190,39 @@ class Database():
             ##### Code Start #####
             
             if feature_name == 'lFootPos':
-                features.append()
+                features.append(self.extract_offset(root_pos, root_rot, pos[:, self.joint_name.index('lToeJoint')]))
+            elif feature_name == 'rFootPos':
+                features.append(self.extract_offset(root_pos, root_rot, pos[:, self.joint_name.index('rToeJoint')]))
             elif feature_name == 'lFootVel':
-                features.append()
+                features.append(self.extract_vel(root_rot, vel[:, self.joint_name.index('lToeJoint')]))
+            elif feature_name == 'rFootVel':
+                features.append(self.extract_vel(root_rot, vel[:, self.joint_name.index('rToeJoint')]))
+            elif feature_name == 'lFootRot':
+                features.append(self.extract_rotation(root_rot, rot[:, self.joint_name.index('lToeJoint')]))
+            elif feature_name == 'rFootRot':
+                features.append(self.extract_rotation(root_rot, rot[:, self.joint_name.index('rToeJoint')]))
+            elif feature_name == 'lKneeAVel':
+                features.append(self.extract_vel(root_rot, avel[:, self.joint_name.index('lKnee')]))
+            elif feature_name == 'rKneeAVel':
+                features.append(self.extract_vel(root_rot, avel[:, self.joint_name.index('rKnee')]))
+            elif feature_name == 'lHandPos':
+                features.append(self.extract_offset(root_pos, root_rot, pos[:, self.joint_name.index('lWrist')]))
+            elif feature_name == 'rHandPos':
+                features.append(self.extract_offset(root_pos, root_rot, pos[:, self.joint_name.index('rWrist')]))
+            elif feature_name == 'lHandVel':
+                features.append(self.extract_vel(root_rot, vel[:, self.joint_name.index('lWrist')]))
+            elif feature_name == 'rHandVel':
+                features.append(self.extract_vel(root_rot, vel[:, self.joint_name.index('rWrist')]))
+            elif feature_name == 'lHipPos':
+                features.append(self.extract_offset(root_pos, root_rot, pos[:, self.joint_name.index('lHip')]))
+            elif feature_name == 'rHipPos':
+                features.append(self.extract_offset(root_pos, root_rot, pos[:, self.joint_name.index('rHip')]))
+            elif feature_name == 'hipVel':
+                features.append(self.extract_vel(root_rot, vel[:, self.joint_name.index('RootJoint')]))
             elif feature_name == 'trajectoryPos2D':
-                features.append()
+                features.append(self.extract_future_pos(root_pos, root_rot, pos[:, 0], frames = [20, 40, 60]))
+            elif feature_name == 'trajectoryRot2D':
+                features.append(self.extract_future_rot(root_rot, root_rot, frames = [20, 40, 60]))
             
             ##### Code End #####
         return np.concatenate(features, axis=-1)
@@ -419,14 +447,20 @@ def main():
     # selected_feature_names = ['trajectoryPos2D', 'trajectoryRot2D']
     # selected_feature_weights = [1, 1]
     
-    selected_feature_names = ['lFootPos', 'rFootPos']
-    selected_feature_weights = [0.75, 0.75]
+    # selected_feature_names = ['lFootPos', 'rFootPos']
+    # selected_feature_weights = [0.75, 0.75]
     
     # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel']
     # selected_feature_weights = [0.75, 0.75, 1, 1]
     
     # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'hipVel']
     # selected_feature_weights = [0.75, 0.75, 1, 1, 1]
+    
+    selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'hipVel', 'trajectoryPos2D', 'trajectoryRot2D']
+    selected_feature_weights = [1, 1, 1, 1, 1, 1, 1]
+    
+    # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'lKneeAVel', 'rKneeAVel', 'hipVel', 'lHandPos', 'rHandPos', 'lHandVel', 'rHandVel',  'trajectoryPos2D', 'trajectoryRot2D']
+    # selected_feature_weights = [0.75, 0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     
     assert len(selected_feature_names) == len(selected_feature_weights)
     
