@@ -453,14 +453,11 @@ def main():
     # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel']
     # selected_feature_weights = [0.75, 0.75, 1, 1]
     
-    # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'hipVel']
+    # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'trajectoryRot2D']
     # selected_feature_weights = [0.75, 0.75, 1, 1, 1]
     
     selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'hipVel', 'trajectoryPos2D', 'trajectoryRot2D']
-    selected_feature_weights = [1, 1, 1, 1, 1, 1, 1]
-    
-    # selected_feature_names = ['lFootPos', 'rFootPos', 'lFootVel', 'rFootVel', 'lKneeAVel', 'rKneeAVel', 'hipVel', 'lHandPos', 'rHandPos', 'lHandVel', 'rHandVel',  'trajectoryPos2D', 'trajectoryRot2D']
-    # selected_feature_weights = [0.75, 0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    selected_feature_weights = [0.75, 0.75, 1, 1, 1, 1, 1]
     
     assert len(selected_feature_names) == len(selected_feature_weights)
     

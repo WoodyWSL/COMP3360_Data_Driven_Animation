@@ -213,6 +213,7 @@ def main():
     viewer = SimpleViewer()  
    
     # part1_key_framing(viewer, 10, 10)
+    
     # part1_key_framing(viewer, 10, 5)
     # part1_key_framing(viewer, 10, 20)
     # part1_key_framing(viewer, 10, 30)
