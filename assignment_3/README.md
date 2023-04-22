@@ -1,4 +1,4 @@
-# Tutorial 5 Practice
+# Assignment 3
 
 ## Highlights
 
@@ -28,6 +28,22 @@ Using these tools, we will develop a Python program that simulates the motion of
 By the end of this assignment, you will have gained a solid understanding of the principles of rigid body simulation and how to implement them using Python and Taichi. You will also have developed practical skills in numerical computing, programming, and visualization that can be applied to a wide range of scientific and engineering problems.
 
 ## Examples
+
+Here are some examples of the sucessfully implemented simulator.
+
+Ball Dropping without changing any of the simulation parameters.
+
+https://user-images.githubusercontent.com/43705353/231971484-f043cb9c-b53b-43cc-9220-c69b3c60fc4c.mov
+
+
+Ball Dropping with initial velocity [3, 0, 0].
+
+https://user-images.githubusercontent.com/43705353/231971536-5b57bb7c-e12c-49bd-806f-c7208e933eb1.mov
+
+
+Ball Dropping with initial velocity [3, 0, 0] and collision damping stiffness 1e4, friction coefficient 0.5 on the ground.
+
+https://user-images.githubusercontent.com/43705353/231973213-6caa0c81-3eab-4b0f-bbbf-e878ca193215.mov
 
 
 
