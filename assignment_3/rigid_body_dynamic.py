@@ -154,19 +154,29 @@ def substep():
         # Collision force, we use a spring model to simulate the collision
         if particle_vertices[i][1] < -1:
             f_collision = collision_stiffness * (-1 - particle_vertices[i][1])
+            f_friction = -friction_stiffness * f_collision * particle_velocities[i].normalized()[1]
             particle_force[i] += ti.Vector([0, f_collision, 0])
+            particle_force[i] += ti.Vector([0, f_friction, 0])      
         if particle_vertices[i][0] < -1:
             f_collision = collision_stiffness * (-1 - particle_vertices[i][0])
+            f_friction = -friction_stiffness * f_collision * particle_velocities[i].normalized()[0]
             particle_force[i] += ti.Vector([f_collision, 0, 0])
+            particle_force[i] += ti.Vector([f_friction, 0, 0])
         if particle_vertices[i][0] > 1:
             f_collision = collision_stiffness * (1 - particle_vertices[i][0])
+            f_friction = friction_stiffness * f_collision * particle_velocities[i].normalized()[0]
             particle_force[i] += ti.Vector([f_collision, 0, 0])
+            particle_force[i] += ti.Vector([f_friction, 0, 0])
         if particle_vertices[i][2] < -1:
             f_collision = collision_stiffness * (-1 - particle_vertices[i][2])
+            f_friction = -friction_stiffness * f_collision * particle_velocities[i].normalized()[2]
             particle_force[i] += ti.Vector([0, 0, f_collision])
+            particle_force[i] += ti.Vector([0, 0, f_friction])
         if particle_vertices[i][2] > 1:
             f_collision = collision_stiffness * (1 - particle_vertices[i][2])
+            f_friction = friction_stiffness * f_collision * particle_velocities[i].normalized()[2]
             particle_force[i] += ti.Vector([0, 0, f_collision])
+            particle_force[i] += ti.Vector([0, 0, f_friction])
 
     # computer the force for rigid body
     body_force = ti.Vector([0.0, 0.0, 0.0])
@@ -228,7 +238,7 @@ canvas.set_background_color((1, 1, 1))
 scene = ti.ui.Scene()
 camera = ti.ui.Camera()
 # rendering frame rate is 1/60
-substeps = int(1 / 60 // dt)
+substeps = int(1 / 75 // dt)
 current_t = 0.0
 
 while window.running:
